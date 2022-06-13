@@ -18,6 +18,7 @@ output:
   bookdown::html_document2:
     toc: yes
     toc_float: yes
+    css: style.css
   bookdown::pdf_book:
     template: latex/template.tex
     citation_package: natbib
