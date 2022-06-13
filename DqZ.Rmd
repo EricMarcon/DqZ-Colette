@@ -19,6 +19,7 @@ output:
     toc: yes
     toc_float: yes
     css: style.css
+    code_folding: show
   bookdown::pdf_book:
     template: latex/template.tex
     citation_package: natbib
@@ -164,7 +165,7 @@ L'entropie généralisée, dite HCDT ou de [@Tsallis1994] est encore la moyenne 
 
 \begin{equation}
   (\#eq:HCDT)
-  ^{q}H = \sum_{s}{p_s\ln_q{1/p_s}}.
+  ^{q}H = \sum_{s}{p_s\ln_q{(1/p_s)}}.
 \end{equation}
 
 L'intérêt de ce formalisme est que tous les "indices de diversité" classiques sont des cas particuliers d'entropie HCDT pour des valeurs particulières de $q$:
@@ -276,7 +277,7 @@ La similarité entre les espèces $s$ et $t$ est $z_{s,t}=e^{-u d_{s,t}}$ où $u
 Un individu est complètement similaire à lui-même (distance nulle, similarité égale à 1).
 
 
-> Exemple: les distances entre les 3 espèces sont dans la matrice:
+> Exemple: les distances entre les 3 espèces sont 1 (entre s1 et s2) et 5 entre s3 et les autres.
 ```{r, tidy=FALSE}
 D <- matrix(
   c(
@@ -288,7 +289,7 @@ D <- matrix(
 colnames(D) <- rownames(D) <- names(C)
 ```
 
-> Dans l'espace engendré par cette matrice de distance :
+> L'espace engendré par cette matrice de distance est:
 ```{r}
 library("ade4")
 D %>% 
