@@ -126,6 +126,8 @@ Shannon(C)
 ```
 
 > "None" signifie qu'aucune correction n'a été apportée à l'estimation.
+> Dans la réalité, la diversité est calculée à partir d'échantillons par des estimateurs mathématiques essaient de corriger l'incomplétude des données.
+> Par exemple, l'estimateur de Chao permet d'évaluer la richesse en évaluant le nombre d'espèces présentes dans la communautés mais pas observées.
 
 
 ## Entropie généralisée
@@ -203,7 +205,7 @@ Le nombre effectif d'espèces correspondant à l'entropie HCDT est son exponenti
   ^{q}D = e_q^{^{q}H}.
 \end{equation}
 
-Le terme *diversité* doit être réservé aux nombres de Hill [@Jost2006], l'entropie doit être appelée entropie est le terme "indice" évité.
+Le terme *diversité* doit être réservé aux nombres de Hill [@Jost2006], l'entropie doit être appelée entropie et le terme "indice" évité.
 
 > Exemple:
 ```{r}
