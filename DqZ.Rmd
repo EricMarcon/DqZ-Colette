@@ -111,7 +111,7 @@ Comme tous les individus de l'espèce $s$ ont la même rareté, l'entropie s'éc
 
 \begin{equation}
   (\#eq:Shannon)
-  H = \sum_{s}{p_s\ln{1/p_s}}.
+  H = \sum_{s}{p_s\ln{(1/p_s)}}.
 \end{equation}
 
 >Exemple d'une communauté de 3 espèces, de probabilités 1/2, 1/4 et 1/4:
