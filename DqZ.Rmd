@@ -343,14 +343,108 @@ CommunityProfile(Dqz, NorP=C, Z=Z) %>%
 # Application à une image
 
 On peut définir une distance entre pixels de l'image dans l'espace défini par les différents canaux de couleur: par exemple, la distance euclidienne.
+
+## Création d'une image
+
+L'image est composée de 4 points : un noir, un rouge, un vert, un bleu.
+
+```{r}
+points_df <- data.frame(
+  id = 1:4,
+  x  = rep(1:2, 2),
+  y  = rep(1:2, each=2),
+  R  = c(  0, 255,   0,   0),
+  V  = c(  0,   0, 255,   0),
+  B  = c(  0,   0,   0, 255)
+)
+points_df
+```
+
+## Distance entre points 
+
+Dans l'espace des couleurs, la distance entre points est la distance euclidienne.
+
+```{r}
+# Nombre de points
+points_n <- nrow(points_df)
+# Matrice de distances dans l'espace des couleurs
+points_d <- matrix(0, nrow=points_n, ncol=points_n)
+# Calcul des distances
+for (i in 1:(points_n-1)) {
+  for (j in (i+1):points_n) {
+    points_d[i, j] <- sqrt(
+      sum(
+        (points_df[i, c("R", "V", "B")] - points_df[j, c("R", "V", "B")])^2
+        )
+      )
+  }
+}
+# Symétrisation
+for (i in 1:(points_n-1)) {
+  for (j in (i+1):points_n) {
+    points_d[j, i] <- points_d[i, j]
+  }
+}
+points_d
+```
+
+## Similarité
+
 La similarité entre pixels est calculée à partir des distances.
-La banalité de chaque pixel est calculée comme la similarité moyenne avec les autres, sa rareté est l'inverse de sa banalité et l'entropie de l'image est la banalité moyenne des pixels.
+Ici, la similarité est le complément à 1 de la distance normalisée.
+
+```{r}
+# Normalisation des distances
+points_d_norm <- points_d / max(points_d)
+# Similarité
+(Z <- 1-points_d_norm)
+```
+
+
+La banalité de chaque pixel est calculée comme la similarité moyenne avec les autres.
+
+```{r}
+(points_ordinariness <- apply(Z, MARGIN = 1, mean))
+```
+
+Sa rareté est l'inverse de sa banalité.
+
+```{r}
+(points_rarity <- 1/points_ordinariness)
+```
+
+## Entropie et diversité
+
+L'entropie de l'image est la moyenne du log de la rareté des pixels.
+
+```{r}
+(points_entropy <- mean(log(points_rarity)))
+```
 Enfin, la diversité de l'image est l'exponentielle de son entropie.
 
-Cette diversité peut être comparée à celle des arbres obtenue par ailleurs.
+```{r}
+(points_diversity <- exp(points_entropy))
+```
+Plus simplement, avec entropart:
+```{r}
+library("entropart")
+Dqz(rep(1/points_n, points_n), q=1, Z=Z)
+```
+Le nombre effectif de pixels est légèrement inférieur à 3.
+Elle est comprise entre 1 si tous les pixels étaient de la même couleur et 4 s'ils étaient de 4 couleurs équidistantes.
 
-Le paramètre $u$ fixe la vitesse de la décroissance de la similarité en fonction de la distance.
-Son choix est libre: on peut chercher la valeur qui optimisera la corrélation entre la diversité des pixels et celle des arbres.
+On peut tracer un profil de diversité en fonction de q, qui donne un poids plus ou moins importants aux pixels rares.
+
+```{r}
+autoplot(CommunityProfile(
+  FUN=Dqz, 
+  NorP=rep(1/points_n, points_n), 
+  q.seq=seq(from=0, to=2, by=0.1), 
+  Z=Z
+  ))
+```
+
+Cette diversité peut être comparée à celle des arbres obtenue par ailleurs.
 
 # Cours complet
 
