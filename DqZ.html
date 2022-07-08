@@ -279,7 +279,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Diversité des pixels</h1>
 <h4 class="author">Eric Marcon</h4>
-<h4 class="date">2022 juillet 07</h4>
+<h4 class="date">2022 juillet 08</h4>
 
 </div>
 
@@ -597,6 +597,8 @@ points_df</code></pre>
 <div id="distance-entre-points" class="section level2" number="3.2">
 <h2><span class="header-section-number">3.2</span> Distance entre points</h2>
 <p>Dans l’espace des couleurs, la distance entre points est la distance euclidienne.</p>
+<div id="code-r" class="section level3" number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> Code R</h3>
 <p></p>
 <pre class="r"><code># Nombre de points
 points_n &lt;- nrow(points_df)
@@ -622,6 +624,45 @@ points_d</code></pre>
 ## [3,]  255 360.6245   0.0000 360.6245
 ## [4,]  255 360.6245 360.6245   0.0000</code></pre>
 <p></p>
+</div>
+<div id="code-c" class="section level3" number="3.2.2">
+<h3><span class="header-section-number">3.2.2</span> Code C</h3>
+<p>Une fonction vide (“void”, c’est-à-dire qui ne renvoie pas de résultat) a pour arguments la matrice (<code>NumericMatrix</code>) des réflectances (entrée) et la matrice de distance entre les points (sortie).
+Il est très difficile de définir une fonction qui renvoie une matrice en C++ parce que la taille de l’objet n’est pas connue: il est plus efficace de passer la matrice de sortie comme argument.</p>
+<p></p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+void distance_c(NumericMatrix reflectances, NumericMatrix distances) {
+  for (int i=0; i &lt; (reflectances.nrow()-1); i++) {
+    for (int j=i+1; j &lt; reflectances.nrow(); j++) {
+      // Calcul de la distance
+      distances(i,j) = sqrt(sum(pow(reflectances(i, _)-reflectances(j, _), 2)));
+      // Symétrisation
+      distances(j,i) = distances(i,j);
+    }
+  }
+}</code></pre>
+<p></p>
+<p>L’appel de la fonction ne renvoie rien mais modifie la matrice de distance passée en argument: C++ traite les arguments par référence (la variable originale est modifiée) au contraire de R qui les traite par valeur (une copie de la variable originale est utilisée).</p>
+<p></p>
+<pre class="r"><code># Appel de la fonction
+distance_c(
+  # Le premier argument est une matrice qui contient une ligne par pixel et tous les canaux en colonne
+  as.matrix(points_df[, c(&quot;R&quot;, &quot;V&quot;, &quot;B&quot;)]),
+  # Le deuxième argument est la matrice de résultat, qui doit être crée avant et avoir la bonne taille
+  # Si la taille n&#39;est pas bonne, R crashe.
+  points_d
+)
+points_d</code></pre>
+<pre><code>##      [,1]     [,2]     [,3]     [,4]
+## [1,]    0 255.0000 255.0000 255.0000
+## [2,]  255   0.0000 360.6245 360.6245
+## [3,]  255 360.6245   0.0000 360.6245
+## [4,]  255 360.6245 360.6245   0.0000</code></pre>
+<p></p>
+</div>
 </div>
 <div id="similarité" class="section level2" number="3.3">
 <h2><span class="header-section-number">3.3</span> Similarité</h2>
