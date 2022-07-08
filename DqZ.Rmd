@@ -61,7 +61,7 @@ knitr::knit_hooks$set(chunk = function(x, options) {
 ```{r Options, include=FALSE}
 ### Customized options for this document
 # Add necessary packages here
-Packages <- c("tidyverse", "entropart", "ade4")
+Packages <- c("tidyverse", "entropart", "ade4", "Rcpp")
 # Install them
 InstallPackages(Packages)
 
@@ -364,6 +364,8 @@ points_df
 
 Dans l'espace des couleurs, la distance entre points est la distance euclidienne.
 
+### Code R
+
 ```{r}
 # Nombre de points
 points_n <- nrow(points_df)
@@ -385,6 +387,42 @@ for (i in 1:(points_n-1)) {
     points_d[j, i] <- points_d[i, j]
   }
 }
+points_d
+```
+
+### Code C
+
+Une fonction vide ("void", c'est-à-dire qui ne renvoie pas de résultat) a pour arguments la matrice (`NumericMatrix`) des réflectances (entrée) et la matrice de distance entre les points (sortie).
+Il est très difficile de définir une fonction qui renvoie une matrice en C++ parce que la taille de l'objet n'est pas connue: il est plus efficace de passer la matrice de sortie comme argument.
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+void distance_c(NumericMatrix reflectances, NumericMatrix distances) {
+  for (int i=0; i < (reflectances.nrow()-1); i++) {
+    for (int j=i+1; j < reflectances.nrow(); j++) {
+      // Calcul de la distance
+      distances(i,j) = sqrt(sum(pow(reflectances(i, _)-reflectances(j, _), 2)));
+      // Symétrisation
+      distances(j,i) = distances(i,j);
+    }
+  }
+}
+```
+
+L'appel de la fonction ne renvoie rien mais modifie la matrice de distance passée en argument: C++ traite les arguments par référence (la variable originale est modifiée) au contraire de R qui les traite par valeur (une copie de la variable originale est utilisée).
+
+```{r}
+# Appel de la fonction
+distance_c(
+  # Le premier argument est une matrice qui contient une ligne par pixel et tous les canaux en colonne
+  as.matrix(points_df[, c("R", "V", "B")]),
+  # Le deuxième argument est la matrice de résultat, qui doit être crée avant et avoir la bonne taille
+  # Si la taille n'est pas bonne, R crashe.
+  points_d
+)
 points_d
 ```
 
